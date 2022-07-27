@@ -8,7 +8,7 @@ function Reactor.initialize()
 		Reactor.log("Reactor not found","e")
 		return false
 	end
-	if not self.adapter.isFormed() then
+	if not Reactor.adapter.isFormed() then
 		Reactor.log("Reactor not formed","e")
 		return false
 	end
@@ -17,12 +17,12 @@ function Reactor.initialize()
 end
 
 function Reactor.activate()
-	local isSafe, safetyMessage = self.checkSafety()
+	local isSafe, safetyMessage = Reactor.checkSafety()
 	if not isSafe then
 		Reactor.log(safetyMessage,"e")
 		return false, "Unsafe"
 	else
-		local status, err = pcall(self.adapter.activate)
+		local status, err = pcall(Reactor.adapter.activate)
 		if status then
 			Reactor.log("Reactor activated")
 			return true
@@ -51,7 +51,7 @@ function Reactor.log(message, messageType)
 		messageHandler = io.stderr
 		doLog = true
 	elseif messageType == "n" then
-		if Reactor.logging = "n" or self.logging = "v" then
+		if Reactor.logging = "n" or Reactor.logging = "v" then
 			doLog = true
 		end
 	elseif messageType == "v" then
