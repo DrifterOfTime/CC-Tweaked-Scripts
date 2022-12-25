@@ -6,20 +6,20 @@ Reactor.logging = "v"
 -- Logging
 ----------------------------------------------------
 
-function Reactor.log(message, messageType)
+function Reactor:log(message, messageType)
 	messageType = messageType or "n"
-	if Reactor.logging == "q" then return true end
+	if self.logging == "q" then return true end
 	local doLog = false
 	messageHandler = io.stdout
 	if messageType == "e" then
 		messageHandler = io.stderr
 		doLog = true
 	elseif messageType == "n" then
-		if Reactor.logging = "n" or Reactor.logging = "v" then
+		if self.logging == "n" or "v" then
 			doLog = true
 		end
 	elseif messageType == "v" then
-		if Reactor.logging == "v" then
+		if self.logging == "v" then
 			doLog = true
 		end
 	end
@@ -28,148 +28,145 @@ function Reactor.log(message, messageType)
 		return true
 	end
 	return false
-end -- Reactor.log()
+end -- Reactor:log()
 
 ----------------------------------------------------
 -- Getters
 ----------------------------------------------------
 
-function Reactor.getBurnRate()
-	return Reactor.adapter.getBurnRate()
-end -- Reactor.getBurnRate()
+function Reactor:getBurnRate()
+	local burnRate = {}
+	burnRate["amount"] = self.adapter.getBurnRate()
+	burnRate["actual"] = self.adapter.getActualBurnRate()
+	burnRate["max"] = self.adapter.getMaxBurnRate()
+	return burnRate
+end -- Reactor:getBurnRate()
 
-function Reactor.getBurnRateMax()
-	return Reactor.adapter.getMaxBurnRate()
-end -- Reactor.getBurnRateMax()
+function Reactor:getCoolant()
+	local coolant = self.adapter.getCoolant()
+	coolant["max"] = self.adapter.getCoolantCapacity()
+	return coolant
+end -- Reactor:getCoolant()
 
-function Reactor.getCoolant()
-	return Reactor.adapter.getCoolant()
-end -- Reactor.getCoolant()
+function Reactor:getDamagePercent()
+	return self.adapter.getDamagePercent()
+end -- Reactor:getDamagePercent()
 
-function Reactor.getCoolantMax()
-	return Reactor.adapter.getCoolantCapacity()
-end -- Reactor.getCoolantMax()
+function Reactor:getFuel()
+	local fuel = self.adapter.getFuel()
+	fuel["max"] = self.adapter.getFuelCapacity()
+	return fuel
+end -- Reactor:getFuel()
 
-function Reactor.getDamagePercent()
-	return Reactor.adapter.getDamagePercent()
-end -- Reactor.getDamagePercent()
+function Reactor:getTemperature()
+	temperature["amount"] = self.adapter.getTemperature()
+	temperature["max"] = self.adapter.getHeatCapacity()
+	return 
+end -- Reactor:getTemperature()
 
-function Reactor.getFuel()
-	return Reactor.adapter.getFuel()
-end -- Reactor.getFuel()
+function Reactor:getHeatedCoolant()
+	local heatedCoolant = self.adapter.getHeatedCoolant()
+	heatedCoolant["max"] = self.adapter.getHeatedCoolantCapacity()
+	return heatedCoolant
+end -- Reactor:getHeatedCoolant()
 
-function Reactor.getFuelMax()
-	return Reactor.adapter.getFuelCapacity()
-end -- Reactor.getFuelMax()
+function Reactor:getHeatingRate()
+	return self.adapter.getHeatingRate()
+end -- Reactor:getHeatingRate()
 
-function Reactor.getTemperature()
-	return Reactor.adapter.getTemperature()
-end -- Reactor.getTemperature()
+function Reactor:getWaste()
+	local waste = self.adapter.getWaste()
+	waste["max"] = self.adapter.getWasteCapacity()
+	return waste
+end -- Reactor:getWaste()
 
-function Reactor.getTemperatureMax()
-	return Reactor.adapter.getHeatCapacity()
-end -- Reactor.getTemperatureMax()
+function Reactor:isActive()
+	return self.adapter.getStatus()
+end -- Reactor:isActive()
 
-function Reactor.getHeatedCoolant()
-	return Reactor.adapter.getHeatedCoolant()
-end -- Reactor.getHeatedCoolant()
-
-function Reactor.getHeatedCoolantMax()
-	return Reactor.adapter.getHeatedCoolantCapacity()
-end -- Reactor.getHeatedCoolantMax()
-
-function Reactor.getHeatingRate()
-	return Reactor.adapter.getHeatingRate()
-end -- Reactor.getHeatingRate()
-
-function Reactor.getWaste()
-	return Reactor.adapter.getWaste()
-end -- Reactor.getWaste()
-
-function Reactor.getWasteMax()
-	return Reactor.adapter.getWasteCapacity()
-end -- Reactor.getWasteMax()
-
-function Reactor.isActive()
-	return Reactor.adapter.getStatus()
-end -- Reactor.isActive()
-
-function Reactor.isFormed()
-	return Reactor.adapter.isFormed()
-end -- Reactor.isFormed()
+function Reactor:isFormed()
+	return self.adapter.isFormed()
+end -- Reactor:isFormed()
 
 ----------------------------------------------------
 -- Setters
 ----------------------------------------------------
 
-function Reactor.setBurnRate(rate)
-	return Reactor.adapter.setBurnRate(rate)
-end -- Reactor.setBurnRate()
+function Reactor:setBurnRate(rate)
+	return self.adapter.setBurnRate(rate)
+end -- Reactor:setBurnRate()
 
 ----------------------------------------------------
 -- Misc Simple Functions
 ----------------------------------------------------
 
-function Reactor.scram()
-	return Reactor.adapter.scram()
-end -- Reactor.scram()
+function Reactor:scram()
+	return self.adapter.scram()
+end -- Reactor:scram()
 
 ----------------------------------------------------
 -- Main Functions
 ----------------------------------------------------
 
-function Reactor.initialize()
-	Reactor.adapter = peripheral.find("fissionReactorLogicAdapter")
-	if Reactor.adapter == nil then
-		Reactor.log("Reactor not found","e")
+function Reactor:initialize()
+	self.adapter = peripheral.find("fissionReactorLogicAdapter")
+	if self.adapter == nil then
+		self:log("Reactor not found","e")
 		return false
 	end
-	if not Reactor.isFormed() then
-		Reactor.log("Reactor not formed","e")
+	if not self:isFormed() then
+		self:log("Reactor not formed","e")
 		return false
 	end
-	Reactor.log("Reactor successfully initialized")
+	self:log("Reactor successfully initialized")
 	return true
-end -- Reactor.initialize()
+end -- Reactor:initialize()
 
-function Reactor.activate()
-	local check = Reactor.check()
+function Reactor:activate()
+	local check = self:check()
 	if check < 0 then
-		Reactor.log(safetyMessage,"e")
+		self:log(safetyMessage,"e")
 		return false
 	else
-		local status, err = pcall(Reactor.adapter.activate)
+		local status, err = pcall(self.adapter.activate)
 		if status then
-			Reactor.log("Reactor activated","v")
+			self:log("Reactor activated","v")
 			return true
 		else
-			Reactor.log("Activation failed: " .. err,"e")
+			self:log("Activation failed: " .. err,"e")
 			return false
 		end
 	end
-end -- Reactor.activate()
+end -- Reactor:activate()
 
-function Reactor.check()
-	local formed = Reactor.isFormed()
-	local active = Reactor.isActive()
+function Reactor:check()
+	local formed = self:isFormed()
+	local active = self:isActive()
 	if not formed then
-		Reactor.log("Reactor not formed", "e")
+		self:log("Reactor not formed", "e")
 		return false
 	end
 	if not active then
-		Reactor.log("Reactor not active", "e")
+		self:log("Reactor not active", "e")
 		return false
 	end
 	return true
-end -- Reactor.check()
+end -- Reactor:check()
 
-function Reactor.adjust(burnRateDelta)
-	burnRate = Reactor.adapter.getBurnRate()
-	if burnRate < 0.1 then
-		Reactor.log("Stopping Reactor")
-		Reactor.scram()
+function Reactor:adjust(burnRateDelta)
+	local burnRate = self:getBurnRate()
+	local fuel = self:getFuel()
+	if not previousFuelAmount then
+		fuelDrainRateFirstDifference = fuel["amount"]
+	else
+		fuelDrainRateFirstDifference = fuel["amount"] - previousFuelAmount
 	end
-	Reactor.setBurnRate(burnRate + burnRateDelta)
+	previousFuelAmount = fuel["amount"] 
+	if burnRate < 0.1 then
+		self:log("Stopping Reactor")
+		self:scram()
+	end
+	self:setBurnRate(burnRate + burnRateDelta)
 end
 
 return Reactor
